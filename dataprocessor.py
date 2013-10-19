@@ -241,6 +241,7 @@ class DataProcessor(object):
 				varrays[varnum] = map(lambda x: self._avg_abs_derivative(x, time), varrays[varnum])
 			print "Array", varnum, "processed", "var_mode =", var_modes[varnum]
 		print "Data processed (var_modes =", var_modes, "group_mode = ", group_mode, "group_by =", group_by, "distort =", distort, ")"
+		print "Now we have", len(varrays[0]), "data points"
 
 		if distort:
 			for i in xrange(len(varrays)):

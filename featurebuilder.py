@@ -33,7 +33,8 @@ class FeatureBuilderOneDevice(object):
 		self.pols = []
 		print "Building polynomal features (device id =", self.device_id, "order =", order, ")"
 		for vs in itertools.combinations_with_replacement(self.varrays, order):
-			self.pols.append(reduce(lambda x, y: x*numpy.array(y), vs, numpy.ones([1, len(vs[0])])))
+			tmp =reduce(lambda x, y: x*numpy.array(y), vs, numpy.ones([1, len(vs[0])]))
+			self.pols.append(tmp[0])
 			print "Processing", len(vs), "features of", len(vs[0]), "readings done"
 		print len(self.pols), "polynomal features built (device id =", self.device_id, "order =", order, ")"
 
@@ -45,8 +46,16 @@ class FeatureBuilderOneDevice(object):
 	def build_pol_features_parallel(self, order, pool_size = 6):
 		print "Building polynomal features (device id =", self.device_id, "order =", order, ")"
 		pool = multiprocessing.Pool(pool_size)
-		self.pols = reduce(lambda x, y: x + [y], pool.map(work, itertools.combinations_with_replacement(self.varrays, order)), [])
+		self.pols = reduce(lambda x, y: x + y, pool.map(work, itertools.combinations_with_replacement(self.varrays, order)), [])
 		print len(self.pols), "polynomal features built (device id =", self.device_id, "order =", order, ")"
+
+	def get_data_set(self):
+		res = numpy.empty(shape = [len(self.pols[0]), len(self.pols)], dtype="float32")
+		for reading in xrange(len(self.pols[0])):
+			for v in xrange(len(self.pols)):
+				res[reading][v] = self.pols[v][reading]
+		return res
+
 def main():
 	fb = FeatureBuilderOneDevice(sensors = ["temp", "audio_p2p", "light", "humidity", "pressure", "motion"], device_id = 17000002, start_date_time = "2013-10-01 00:00:01", end_date_time = "2013-10-02 00:00:01")
 	fb.process_one_device()

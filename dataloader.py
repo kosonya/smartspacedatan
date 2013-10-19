@@ -27,7 +27,7 @@ class DataLoader(object):
 		self.data = c.fetchall()
 		c.close()
 		db.close()
-		print "Data loaded"
+		print "Data loaded:", len(self.data), "readings"
 
 	def raw_data(self):
 		return self.data
