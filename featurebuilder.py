@@ -37,6 +37,10 @@ class FeatureBuilderOneDevice(object):
 			self.pols.append(numpy.array(v1) * numpy.array(v2))
 		print len(self.pols), "polynomal features built (device id =", self.device_id, "order =", order, ")"
 
+	def process_one_device_parallel(self, all_var_modes = ["average", "maximum", "variance", "extremums", "average derivative", "average absolute derivative"], group_mode = "time", group_by = 20, pool_size = 6):
+		self.dp = dataprocessor.DataProcessor(self.load_one())
+		self.varrays = self.dp.extract_all_features_parallel(all_var_modes, group_mode, group_by, pool_size)
+
 
 	def build_pol_features_parallel(self, order, pool_size = 6):
 		print "Building polynomal features (device id =", self.device_id, "order =", order, ")"
@@ -44,7 +48,7 @@ class FeatureBuilderOneDevice(object):
 		self.pols = reduce(lambda x, y: x + [y], pool.map(work, itertools.combinations_with_replacement(self.varrays, order)), [])
 		print len(self.pols), "polynomal features built (device id =", self.device_id, "order =", order, ")"
 def main():
-	fb = FeatureBuilderOneDevice(sensors = ["temp", "audio_p2p", "light", "humidity", "pressure", "motion"], device_id = 17000002, start_date_time = "2013-09-20 00:00:01", end_date_time = "2013-10-17 00:00:01")
+	fb = FeatureBuilderOneDevice(sensors = ["temp", "audio_p2p", "light", "humidity", "pressure", "motion"], device_id = 17000002, start_date_time = "2013-10-01 00:00:01", end_date_time = "2013-10-02 00:00:01")
 	fb.process_one_device()
 	fb.build_pol_features_parallel(order = 2)
 
