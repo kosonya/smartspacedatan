@@ -10,7 +10,7 @@ import new_dataloader
 import timeprocessor
 
 
-group_by = 30
+group_by = 60
 
 
 
@@ -25,8 +25,8 @@ def main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
 	global group_by
 	numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
 	_min_t, _max_t = new_dataloader.get_min_max_timestamps()
-	_min_t = timeprocessor.to_unixtime("2013-10-16 00:00:01")
-	_max_t = timeprocessor.to_unixtime("2013-10-16 00:02:01")
+	#_min_t = timeprocessor.to_unixtime("2013-10-16 00:00:01")
+	#_max_t = timeprocessor.to_unixtime("2013-10-16 00:04:01")
 	print "Minimum timestamp = %d (%s); maximum timestamp = %d (%s)" % (_min_t, timeprocessor.from_unixtime(_min_t), _max_t, timeprocessor.from_unixtime(_max_t))
 
 	devices = new_dataloader.fetch_all_macs()
@@ -143,4 +143,11 @@ def main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
 
 
 if __name__ == "__main__":
-	main()
+	for order in [1, 2, 3]:
+		print "%d order processing has started" % order
+		report = main(order = order, pnodefile = ("%d_order_pnode.p" % order), testpairfile = ("%d_order_testpair.p" % order))
+		print "%d order processing has stopped" % order
+		f = open( ("%d_order_report.txt" % order), "w")
+		f.write(report)
+		f.close()
+		print "Report is written to", ("%d_order_report.txt" % order)
