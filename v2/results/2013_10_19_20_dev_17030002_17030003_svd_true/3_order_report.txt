@@ -1,0 +1,28 @@
+Test example:
+[[  1.0e+00   5.2e+02   1.0e+03   1.6e+02   1.0e+05   1.6e+02   0.0e+00   5.4e+02   1.0e+03   1.7e+02   1.0e+05   2.1e+02   0.0e+00 ...,   1.4e-01   0.0e+00   0.0e+00   6.4e-02   1.2e-01   0.0e+00   2.2e-01   0.0e+00   0.0e+00   3.9e-01   0.0e+00   0.0e+00   0.0e+00]]
+Test result:
+[[  1.2e+13  -1.1e+13   2.3e+12  -1.7e+12   1.8e+11   4.1e+10  -1.1e+11  -1.9e+11  -1.9e+11   4.8e+10   1.2e+11   5.0e+10  -1.1e+11 ...,   4.5e+04   1.8e+05  -2.7e+05  -1.3e+05   8.3e+04  -2.2e+05  -2.7e+04   1.0e+05   3.1e+04  -1.4e+05  -1.1e+05  -9.9e+03  -4.9e+04]]
+
+PCA Node was dumped to 3_order_pnode.p with pickle
+Test pair was dumped to 3_order_testpair.p with pickle
+
+Device stats:
+Device 17030002: 621468 readings, 18605 bundles created
+Device 17030003: 641445 readings, 20225 bundles created
+Total readings processed:	1262913
+Total data bundles created:	38830
+Readings were groupped by 60 seconds
+Data processed from 2013-09-23 18:08:07 to 2013-10-19 22:00:39
+
+Processing started at:	Sat Oct 19 22:36:58 2013
+Processing end at:	Sun Oct 20 04:48:05 2013
+It took 22266 seconds
+Stopping started at:	Sun Oct 20 04:48:05 2013
+Stopping stopped at:	Sun Oct 20 05:08:34 2013
+It took 1229 seconds
+Total time elapsed:	23496 seconds
+
+Raw features:		6
+Extracted features:	36
+Polynomial features:	9139
+Polynomial order:	3

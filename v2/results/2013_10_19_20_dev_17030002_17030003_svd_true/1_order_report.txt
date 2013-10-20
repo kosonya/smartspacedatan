@@ -1,0 +1,30 @@
+Test example:
+[[  1.0e+00   5.2e+02   1.0e+03   1.6e+02   1.0e+05   1.6e+02   0.0e+00   5.4e+02   1.0e+03   1.7e+02   1.0e+05   2.1e+02   0.0e+00   3.0e+01   3.4e+00   1.5e+00   6.1e+02   1.9e+03   0.0e+00   9.4e-01  -4.8e-01  -2.8e-01  -5.6e+00  -6.0e+00   0.0e+00   4.2e+00   1.9e+00   8.0e-01
+    2.0e+01   3.2e+01   0.0e+00   4.7e-01   5.0e-01   2.7e-01   4.0e-01   7.3e-01   0.0e+00]]
+Test result:
+[[ -8.3e+02   1.7e+02   9.6e+01   9.6e+01  -1.0e+01  -2.2e+00   6.3e+00   1.4e+01   7.7e-01   5.7e+00   3.6e+00   6.2e+00   1.7e+00   2.7e+00  -1.5e+00   3.2e+00   5.6e+00   1.2e-01  -6.7e-01   2.7e-01  -9.0e-01  -9.6e-01   9.2e-02   1.3e-01  -3.7e-01  -1.7e-01  -8.3e-02   7.7e-03
+   -2.0e-01  -1.3e-01  -4.1e-04  -5.6e-06   5.1e-05  -2.7e-06  -7.1e-06  -2.0e-15   3.9e-09]]
+
+PCA Node was dumped to 1_order_pnode.p with pickle
+Test pair was dumped to 1_order_testpair.p with pickle
+
+Device stats:
+Device 17030002: 621468 readings, 18605 bundles created
+Device 17030003: 641445 readings, 20225 bundles created
+Total readings processed:	1262913
+Total data bundles created:	38830
+Readings were groupped by 60 seconds
+Data processed from 2013-09-23 18:08:07 to 2013-10-19 22:00:39
+
+Processing started at:	Sat Oct 19 22:24:48 2013
+Processing end at:	Sat Oct 19 22:29:27 2013
+It took 279 seconds
+Stopping started at:	Sat Oct 19 22:29:27 2013
+Stopping stopped at:	Sat Oct 19 22:29:27 2013
+It took 0 seconds
+Total time elapsed:	279 seconds
+
+Raw features:		6
+Extracted features:	36
+Polynomial features:	37
+Polynomial order:	1
