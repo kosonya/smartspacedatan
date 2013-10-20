@@ -2,6 +2,8 @@
 
 import time
 import numpy
+import mdp
+import pickle
 
 import new_dataprocessor
 import new_dataloader
@@ -19,15 +21,16 @@ group_by = 30
 
 
 
-def main():
+def main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
 	global group_by
 	numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
 	_min_t, _max_t = new_dataloader.get_min_max_timestamps()
 	_min_t = timeprocessor.to_unixtime("2013-10-16 00:00:01")
-	_max_t = timeprocessor.to_unixtime("2013-10-16 00:40:01")
+	_max_t = timeprocessor.to_unixtime("2013-10-16 00:02:01")
 	print "Minimum timestamp = %d (%s); maximum timestamp = %d (%s)" % (_min_t, timeprocessor.from_unixtime(_min_t), _max_t, timeprocessor.from_unixtime(_max_t))
 
 	devices = new_dataloader.fetch_all_macs()
+	devices = ["17030002", "17030003"]
 	print "Devices:", devices
 
 	total_readings = 0
@@ -36,8 +39,12 @@ def main():
 	for device in devices:
 		dev_stats[device] = [0, 0]
 
+	pnode = mdp.nodes.PCANode(svd=True)
+
 	processing_time_start = time.asctime()
 	processing_time_start_s = time.time()
+
+
 
 	for t_start in xrange(_min_t, _max_t+1, group_by):
 		t_end = t_start + group_by - 1
@@ -63,28 +70,74 @@ def main():
 				n_extr_feats = len(time_and_feats) - 1
 				print "%d features extracted" % n_extr_feats
 
-				_time, pols = new_dataprocessor.build_polynomial_features(time_and_feats)
+				_time, pols = new_dataprocessor.build_polynomial_features(time_and_feats, order=order)
 				n_pol_feats = pols.size
+				example_pols_in = pols
 				print "%d polynomial features created" % n_pol_feats
 				print pols
+				print "Adding to PCA node..."
+				pnode.train(pols)
+				print "Added!"
 			print "\n"
 
 	processing_time_end = time.asctime()
 	processing_time_end_s = time.time()
-	print "Device stats:"
-	for device in devices:
-		print "Device %s: %d readings, %d bundles created" % (device, dev_stats[device][0], dev_stats[device][1])
-	print "Total readings processed:\t", total_readings
-	print "Total data bundles created:\t", total_bundles
-	print "Readings were groupped by %d seconds" % group_by
-	print "Data processed from %s to %s" % ( timeprocessor.from_unixtime(_min_t), timeprocessor.from_unixtime(_max_t) ), "\n"
 
-	print "Processing started at:\t", processing_time_start
-	print "Processing end at:\t", processing_time_end
-	print "It took %d seconds" % (processing_time_end_s - processing_time_start_s), "\n"
-	print "Raw features:\t\t", n_raw_feats
-	print "Extracted features:\t", n_extr_feats
-	print "Polynomial features:\t", n_pol_feats
+	print "Stopping training..."
+	stopping_time_start = time.asctime()
+	stopping_time_start_s = time.time()
+	pnode.stop_training(debug = True)
+	stopping_time_end = time.asctime()
+	stopping_time_end_s = time.time()
+
+	print "Dumping PCA node with pickle to:", pnodefile
+	f = open(pnodefile,  "wb")
+	pickle.dump(pnode, f)
+	f.close()
+	print "Dumped successfully"
+
+	print "Test example:"
+	print example_pols_in
+	example_pols_out = pnode.execute(example_pols_in)
+	print "Result:"
+	print example_pols_out
+
+	print "Dumping test pair with pickle to:", testpairfile
+	f = open(testpairfile,  "wb")
+	pickle.dump((example_pols_in, example_pols_out), f)
+	f.close()
+	print "Dumped successfully"
+
+	report = ""
+
+	report += "Test example:\n" + str(example_pols_in) + "\n"
+	report += "Test result:\n" + str(example_pols_out) + "\n\n"
+
+	report += "PCA Node was dumped to %s with pickle\n" % pnodefile
+	report += "Test pair was dumped to %s with pickle\n\n" % testpairfile
+
+	report += "Device stats:" + "\n"
+	for device in devices:
+		report += "Device %s: %d readings, %d bundles created" % (device, dev_stats[device][0], dev_stats[device][1]) + "\n"
+	report += "Total readings processed:\t" + str(total_readings) + "\n"
+	report += "Total data bundles created:\t" + str(total_bundles) + "\n"
+	report += "Readings were groupped by %d seconds" % group_by + "\n"
+	report += "Data processed from %s to %s" % ( timeprocessor.from_unixtime(_min_t), timeprocessor.from_unixtime(_max_t) ) + "\n" + "\n"
+
+	report += "Processing started at:\t" + str(processing_time_start) + "\n"
+	report += "Processing end at:\t" + str(processing_time_end) + "\n"
+	report += "It took %d seconds" % (processing_time_end_s - processing_time_start_s) + "\n"
+	report += "Stopping started at:\t" + str(stopping_time_start) + "\n"
+	report += "Stopping stopped at:\t" + str(stopping_time_end) + "\n"
+	report += "It took %d seconds" % (stopping_time_end_s - stopping_time_start_s) + "\n"
+	report += "Total time elapsed:\t%d seconds" % (stopping_time_end_s - processing_time_start_s) + "\n" + "\n"
+	report += "Raw features:\t\t" + str(n_raw_feats) + "\n"
+	report += "Extracted features:\t" + str(n_extr_feats) + "\n"
+	report += "Polynomial features:\t" + str(n_pol_feats) + "\n"
+	report += "Polynomial order:\t" + str(order) + "\n"
+
+	print report
+	return report
 
 
 
