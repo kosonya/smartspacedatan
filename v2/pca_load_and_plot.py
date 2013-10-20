@@ -2,8 +2,23 @@
 
 import numpy
 import pickle
+import matplotlib.pyplot as plt
 import sys
 
+
+def prepare_for_plotting(arr, threshold=1):
+	avg = numpy.average(arr)
+	std = numpy.std(arr)
+	res = []
+	for x in arr[0]:
+		if abs(x - avg) > std*threshold:
+			if x > avg:
+				res.append(avg+std*threshold)
+			else:
+				res.append(avg-std*threshold)
+		else:
+			res.append(x)
+	return res
 
 def main():
 	numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
@@ -27,6 +42,12 @@ def main():
 	print "Testout from here:"
 	print my_testout
 	print "They are equal:", testout == my_testout
+	plt.figure(1)
+	plt.subplot(211)
+	plt.bar(range(testin.size), prepare_for_plotting(testin))
+	plt.subplot(212)
+	plt.bar(range(testout.size), prepare_for_plotting(testout))
+	plt.show()
 
 if __name__ == "__main__":
 	main()
