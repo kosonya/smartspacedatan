@@ -2,18 +2,18 @@
 
 import numpy
 import pickle
-
+import sys
 
 
 def main():
 	numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
-	filename2 = "pnode.p"
+	filename2 = sys.argv[1]
 	print "Loading PCA node from", filename2
 	f = open(filename2,  "rb")
 	pnode = pickle.load(f)
 	f.close()
 	print "Loading done"
-	filename3 = "testpair.p"
+	filename3 = sys.argv[2]
 	print "Loading test pair from", filename3
 	f = open(filename3,  "rb")
 	testin, testout = pickle.load(f)
