@@ -1,0 +1,61 @@
+Test example:
+[[  1.0e+00   5.1e+02   9.4e+02   1.6e+02   1.0e+05   2.9e+02   0.0e+00   5.1e+02   9.4e+02   1.6e+02   1.0e+05   3.8e+02   0.0e+00 ...,   4.0e-03   4.5e-03   0.0e+00   9.1e-03   1.6e-02   1.8e-02   0.0e+00   2.8e-02   3.2e-02   0.0e+00   3.6e-02   0.0e+00   0.0e+00]]
+Test result:
+[[ -9.5e+31  -5.2e+30   3.8e+30  -1.2e+19  -2.8e+18  -1.2e+19  -3.0e+19  -9.9e+18  -9.0e+19  -1.3e+20   1.5e+18   1.8e+20  -2.1e+19 ...,  -4.3e+04   1.4e+04  -7.1e+19  -1.0e+20   1.0e+21   1.9e+21   7.8e+20   5.8e+19  -2.7e+20  -1.5e+21   1.6e+21   1.3e+20  -8.2e+15]]
+
+PCA Node was dumped to 2_order_pnode.p with pickle
+Test pair was dumped to 2_order_testpair.p with pickle
+
+Device stats:
+Device 17000001: 0 readings, 0 bundles created
+Device 17010001: 0 readings, 0 bundles created
+Device 17020001: 0 readings, 0 bundles created
+Device 17030001: 0 readings, 0 bundles created
+Device 17010002: 693869 readings, 22002 bundles created
+Device 17020006: 0 readings, 0 bundles created
+Device 17020007: 0 readings, 0 bundles created
+Device 17020008: 0 readings, 0 bundles created
+Device 17020009: 0 readings, 0 bundles created
+Device 17030009: 455329 readings, 16389 bundles created
+Device 17020005: 862781 readings, 21259 bundles created
+Device 1703000a: 675264 readings, 20036 bundles created
+Device 1703000b: 0 readings, 0 bundles created
+Device 17030005: 0 readings, 0 bundles created
+Device 17030006: 0 readings, 0 bundles created
+Device 17000008: 880347 readings, 20438 bundles created
+Device 17030007: 731779 readings, 21522 bundles created
+Device 17000009: 0 readings, 0 bundles created
+Device 17030008: 0 readings, 0 bundles created
+Device 17000007: 0 readings, 0 bundles created
+Device 17010003: 661090 readings, 20796 bundles created
+Device 17000002: 1203665 readings, 22217 bundles created
+Device 17000003: 1199750 readings, 22266 bundles created
+Device 17000004: 1030451 readings, 21734 bundles created
+Device 17000005: 792737 readings, 20717 bundles created
+Device 17000006: 768364 readings, 20054 bundles created
+Device 17010004: 219779 readings, 7994 bundles created
+Device 17010005: 522857 readings, 15876 bundles created
+Device 17010006: 727627 readings, 19887 bundles created
+Device 17020002: 0 readings, 0 bundles created
+Device 17020003: 912855 readings, 22368 bundles created
+Device 17020004: 946687 readings, 22047 bundles created
+Device 17030002: 658661 readings, 19557 bundles created
+Device 17030003: 677060 readings, 21177 bundles created
+Device 17030004: 176629 readings, 8509 bundles created
+Total readings processed:	14797581
+Total data bundles created:	386845
+Readings were groupped by 60 seconds
+Data processed from 2013-09-23 18:08:07 to 2013-10-20 14:06:51
+
+Processing started at:	Sun Oct 20 15:55:56 2013
+Processing end at:	Sun Oct 20 17:17:47 2013
+It took 4910 seconds
+Stopping started at:	Sun Oct 20 17:17:47 2013
+Stopping stopped at:	Sun Oct 20 17:17:48 2013
+It took 1 seconds
+Total time elapsed:	4912 seconds
+
+Raw features:		6
+Extracted features:	36
+Polynomial features:	703
+Polynomial order:	2
