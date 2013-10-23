@@ -36,41 +36,30 @@ def trim(arr, threshold=100):
 	print ""
 	return res
 
-class MaxMins(object):
+class DataStats(object):
 	def __init__(self):
-		self.mins = []
-		self.maxes = []
-		self.summs = None
-	
-	def add_feats(self, feats):
-		if self.mins == []:
-			self.mins = list(feats)
-		else:
-			for i in xrange(len(self.mins)):
-				if feats[i] < self.mins[i]:
-					self.mins[i] = feats[i]
-		if self.maxes == []:
-			self.maxes = list(feats)
-		else:
-			for i in xrange(len(self.maxes)):
-				if feats[i] > self.maxes[i]:
-					self.maxes[i] = feats[i]
-		if self.summs == None:
-			self.summs = numpy.array(feats)
-		else:
-			self.summs += feats
+		self.history = []
 
+	def add(self, arr):
+		self.history.append(list(arr))
 
 	def get_maxes(self):
-		return self.maxes
+		return numpy.amax(numpy.transpose(numpy.array(self.history)), axis=1)
 
 	def get_mins(self):
-		return self.mins
+		return numpy.amin(numpy.transpose(numpy.array(self.history)), axis=1)
 
 	def get_avgs(self):
-		avgs = list(self.summs/self.summs.size)
-		print "avgs:", avgs
-		return avgs
+		res = []
+		for arr in numpy.transpose(numpy.array(self.history)):
+			res.append(numpy.average(arr))
+		return res
+
+	def get_stds(self):	#That's so wrong...
+		res = []
+		for arr in numpy.transpose(numpy.array(self.history)):
+			res.append(numpy.std(arr))
+		return res
 
 
 def main():
@@ -91,8 +80,8 @@ def main():
 	print "Devices:", devices
 
 
-	mm_raw = MaxMins()
-	mm_pca = MaxMins()
+	st_raw = DataStats()
+	st_pca = DataStats()
 
 	for t_start in xrange(_min_t, _max_t+1, group_by):
 		t_end = t_start + group_by - 1
@@ -106,20 +95,41 @@ def main():
 				uz_data = new_dataprocessor.unzip_data_bundle(data)
 				time_and_feats = new_dataprocessor.extract_all_features_from_sensors(uz_data)
 				print time_and_feats
-				_time, pols = new_dataprocessor.build_polynomial_features(time_and_feats, order=1)
-				mm_raw.add_feats(pols[0])
+				_time, pols = new_dataprocessor.build_polynomial_features(time_and_feats, order=2)
+				st_raw.add(pols[0])
 				pca_feats = pnode.execute(pols)
-				mm_pca.add_feats(pca_feats[0])
+				st_pca.add(pca_feats[0])
 				
-	raw_maxes = mm_raw.get_maxes()
-	pca_maxes = mm_pca.get_maxes()
+	plt.figure(1)
 
-	raw_mins = mm_raw.get_mins()
-	pca_mins = mm_pca.get_mins()
+	plt.subplot(221)
+	raw_maxes = st_raw.get_avgs()
+	plt.title("No PCA - averages")
+	plt.xlabel("Variable")
+	plt.bar(range(len(raw_maxes)), raw_maxes)
 
-	raw_avgs = mm_raw.get_avgs()
+	plt.subplot(222)
+	raw_stds = st_raw.get_stds()
+	plt.title("No PCA - stds")
+	plt.xlabel("Variable")
+	plt.bar(range(len(raw_stds)), raw_stds)
 
-	plt.bar(range(len(raw_avgs)), [x if (abs(x)) < 20000 else 20000 for x in raw_avgs])	
+
+	plt.subplot(223)
+	pca_maxes = st_pca.get_avgs()
+	plt.title("With PCA - averages")
+	plt.xlabel("Variable")
+	plt.bar(range(len(pca_maxes)), pca_maxes)
+
+
+	plt.subplot(224)
+	pca_stds = st_pca.get_stds()[5:100]
+	plt.title("With PCA - stds")
+	plt.xlabel("Variable")
+	plt.bar(range(len(pca_stds)), pca_stds)
+
+
+	plt.tight_layout()
 
 	plt.show()
 
