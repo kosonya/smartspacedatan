@@ -5,13 +5,15 @@ import pickle
 import os.path
 import dataloader
 import dataprocessor
+import numpy
 
 
 
 class DataProvider(object):
-	def __init__(self, order=1, use_pca=False, pca_nodes_path=None, db_host="localhost", db_user="root", db_password="", db_name="andrew", device_list=None, start_time=None, stop_time=None, debug=False, group_by = 60, device_groupping = "dict", eliminate_const_one=False):
+	def __init__(self, order=1, use_pca=False, pca_nodes_path=None, db_host="localhost", db_user="root", db_password="", db_name="andrew", device_list=None, start_time=None, stop_time=None, debug=False, group_by = 60, device_groupping = "dict", eliminate_const_one=True, dtype="float64"):
 		self.debug = debug
 		self.order = order
+		self.dtype = dtype
 		self.use_pca = use_pca
 		self.eliminate_const_one = eliminate_const_one
 		self.pca_nodes_path = pca_nodes_path
@@ -69,64 +71,75 @@ class DataProvider(object):
 	def next(self):
 		if self._end_t >= self.stop_time:
 			raise StopIteration
-		if self.device_groupping == "dict":
-			res = {}
+		res = {}
+		if self.debug:
+			_t = (self._start_t + self._end_t)/2.0
+			percent = 100.0 * (_t - self.start_time)/float((self.stop_time - self.start_time))
+			print "Processing from", self._start_t, "to", self._end_t, "(", percent, " % done)"
+		for device in self.device_list:
 			if self.debug:
-				print "Processing from", self._start_t, "to", self._end_t
-			for device in self.device_list:
+				print "Processing device", device
+			count, data = self.data_loader.load_data_bundle(self._start_t, self._end_t, device)
+			if count > 0:
+				res[device] = data
 				if self.debug:
-					print "Processing device", device
-				count, data = self.data_loader.load_data_bundle(self._start_t, self._end_t, device)
-				if count > 0:
-					res[device] = data
-					if self.debug:
-						print "Loaded", count, "readings"
-				elif self.debug:
-					print "No data, skipped"
-			if not res:
+					print "Loaded", count, "readings"
+			elif self.debug:
+				print "No data, skipped"
+		if not res:
+			if self.debug:
+				print "No data at all, skipping"
+			self._start_t = self._end_t
+			self._end_t = self._start_t + self.group_by
+			return self.next()
+		else:
+			for (device, data) in res.items():
 				if self.debug:
-					print "No data at all, skipping"
-				self._start_t = self._end_t
-				self._end_t = self._start_t + self.group_by
-				return self.next()
-			else:
-				for (device, data) in res.items():
+					print "\nProcessing device", device
+					print "Number of readings", len(data)
+					print "Number of raw features:", len(data[0])-1
+					print "Extracting features"
+				uz_data = dataprocessor.unzip_data_bundle(data)
+				time_and_feats = dataprocessor.extract_all_features_from_sensors(uz_data)
+				if self.debug:
+					print len(time_and_feats) - 1, "features extracted"
+				if self.debug:
+					print "Building polynomial features of order", self.order
+				_time, pols = dataprocessor.build_polynomial_features(time_and_feats, order=self.order)
+				if self.eliminate_const_one:
+					pols = pols[:,1:]
 					if self.debug:
-						print "\nProcessing device", device
-						print "Number of readings", len(data)
-						print "Number of raw features:", len(data[0])-1
-						print "Extracting features"
-					uz_data = dataprocessor.unzip_data_bundle(data)
-					time_and_feats = dataprocessor.extract_all_features_from_sensors(uz_data)
+						print "Eliminating constant 1 from features"
+				n_pol_feats = pols.size
+				if self.debug:
+					print "%d polynomial features created" % n_pol_feats
+				res[device] = _time, pols
+				if self.use_pca:
 					if self.debug:
-						print len(time_and_feats) - 1, "features extracted"
-					if self.debug:
-						print "Building polynomial features of order", self.order
-					_time, pols = dataprocessor.build_polynomial_features(time_and_feats, order=self.order)
-					if self.eliminate_const_one:
-						pols = pols[:,1:]
-						if self.debug:
-							print "Eliminating constant 1 from features"
-					n_pol_feats = pols.size
-					if self.debug:
-						print "%d polynomial features created" % n_pol_feats
-					res[device] = _time, pols
-					if self.use_pca:
-						if self.debug:
-							print "Applying PCA"
-						res[device] = _time, self.pnode.execute(res[device][1])
-				self._start_t = self._end_t
-				self._end_t = self._start_t + self.group_by
+						print "Applying PCA"
+					res[device] = _time, self.pnode.execute(res[device][1])
+			self._start_t = self._end_t
+			self._end_t = self._start_t + self.group_by
+		
+			if self.device_groupping == "dict":
 				return res
+			elif self.device_groupping == "numpy_matrix":
+				arr = numpy.empty([len(res), n_pol_feats], dtype=self.dtype)
+				for i in xrange(len(res)):
+					arr[i] = res.values()[i][1][0]
+				return arr
 		
 
 
 
 def main():
-	dataprov = DataProvider(order=1, use_pca = True, pca_nodes_path="../v2/results/2013_10_20_22_svd_true", debug=True, start_time = 1379984887, stop_time = 1379985187, device_list = ["17030002", "17030003", "17030004"])
+	numpy.set_printoptions(precision=1, linewidth=120, threshold=20, edgeitems=5)
+	dataprov = DataProvider(order=1, use_pca = False, pca_nodes_path="../v2/results/2013_10_20_22_svd_true", debug=True, start_time = 1379984887, stop_time = 1379985187, device_list = ["17030002", "17030003", "17030004"], eliminate_const_one=True, device_groupping="numpy_matrix")
 	for data in dataprov:
-		for device, d in data.items():
-				print device, d
+		if False:
+			for device, d in data.items():
+					print device, d
+		print data
 
 if __name__ == "__main__":
 	main()
