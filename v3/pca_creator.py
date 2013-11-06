@@ -16,8 +16,9 @@ def _main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
     global group_by
     report = ""
     try:
-        numpy.set_printoptions(precision=1, linewidth=150, threshold=20, edgeitems=5)
-        data_provider = dataprovider.DataProvider(order=1, debug=True, start_time = 1379984887, stop_time = 1379984887+3600, device_list = ["17030002", "17030003", "17030004"], eliminate_const_one=True, device_groupping="numpy_matrix")
+        numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
+#        data_provider = dataprovider.DataProvider(order=1, debug=True, start_time = 1379984887, stop_time = 1379984887+3600, device_list = ["17030002", "17030003", "17030004"], eliminate_const_one=True, device_groupping="numpy_matrix")
+        data_provider = dataprovider.DataProvider(order=1, debug=True, eliminate_const_one=True, device_groupping="numpy_matrix")
 
         pnode = mdp.nodes.PCANode(svd=True)
 
