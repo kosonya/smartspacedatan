@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-import new_dataloader
+import dataloader
 import pickle
 import os.path
-import new_dataloader
-import new_dataprocessor
+import dataloader
+import dataprocessor
 
 
 
@@ -29,17 +29,15 @@ class DataProvider(object):
 		self.db_user = db_user
 		self.db_password = db_password
 		self.db_name = db_name
+		self.data_loader = dataloader.DataLoader(mysql_user = self.db_user, mysql_password = self.db_password, mysql_host = self.db_host, mysql_db = self.db_name)
+
 
 		if start_time and stop_time and device_list:
 			self.start_time = start_time
 			self.stop_time = stop_time
 			self.device_list = device_list
 		else:
-			new_dataloader.mysql_user = self.db_user
-			new_dataloader.mysql_password = self.db_password
-			new_dataloader.mysql_host = self.db_host
-			new_dataloader.mysql_db = self.db_name
-			min_t, max_t = new_dataloader.get_min_max_timestamps()
+			min_t, max_t = self.data_loader.get_min_max_timestamps()
 			if not start_time:
 				self.start_time = min_t
 				if debug:
@@ -53,7 +51,7 @@ class DataProvider(object):
 			else:
 				self.stop_time = stop_time
 			if not device_list:
-				self.device_list = new_dataloader.fetch_all_macs()
+				self.device_list = self.data_loader.fetch_all_macs()
 				if debug:
 					print "Device list not specified, using all available instad:"
 					for device in self.device_list:
@@ -78,11 +76,7 @@ class DataProvider(object):
 			for device in self.device_list:
 				if self.debug:
 					print "Processing device", device
-				new_dataloader.mysql_user = self.db_user
-				new_dataloader.mysql_password = self.db_password
-				new_dataloader.mysql_host = self.db_host
-				new_dataloader.mysql_db = self.db_name
-				count, data = new_dataloader.load_data_bundle(self._start_t, self._end_t, device)
+				count, data = self.data_loader.load_data_bundle(self._start_t, self._end_t, device)
 				if count > 0:
 					res[device] = data
 					if self.debug:
@@ -102,13 +96,13 @@ class DataProvider(object):
 						print "Number of readings", len(data)
 						print "Number of raw features:", len(data[0])-1
 						print "Extracting features"
-					uz_data = new_dataprocessor.unzip_data_bundle(data)
-					time_and_feats = new_dataprocessor.extract_all_features_from_sensors(uz_data)
+					uz_data = dataprocessor.unzip_data_bundle(data)
+					time_and_feats = dataprocessor.extract_all_features_from_sensors(uz_data)
 					if self.debug:
 						print len(time_and_feats) - 1, "features extracted"
 					if self.debug:
 						print "Building polynomial features of order", self.order
-					_time, pols = new_dataprocessor.build_polynomial_features(time_and_feats, order=self.order)
+					_time, pols = dataprocessor.build_polynomial_features(time_and_feats, order=self.order)
 					if self.eliminate_const_one:
 						pols = pols[:,1:]
 						if self.debug:
@@ -129,7 +123,7 @@ class DataProvider(object):
 
 
 def main():
-	dataprov = DataProvider(order=1, use_pca = True, pca_nodes_path="results/2013_10_20_22_svd_true", debug=True, start_time = 1379984887, stop_time = 1379985187, device_list = ["17030002", "17030003", "17030004"])
+	dataprov = DataProvider(order=1, use_pca = True, pca_nodes_path="../v2/results/2013_10_20_22_svd_true", debug=True, start_time = 1379984887, stop_time = 1379985187, device_list = ["17030002", "17030003", "17030004"])
 	for data in dataprov:
 		for device, d in data.items():
 				print device, d
