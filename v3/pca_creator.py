@@ -16,7 +16,7 @@ def _main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
     global group_by
     report = ""
     try:
-        numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
+        numpy.set_printoptions(precision=1, linewidth=150, threshold=20, edgeitems=5)
         data_provider = dataprovider.DataProvider(order=1, debug=True, start_time = 1379984887, stop_time = 1379984887+3600, device_list = ["17030002", "17030003", "17030004"], eliminate_const_one=True, device_groupping="numpy_matrix")
 
         pnode = mdp.nodes.PCANode(svd=True)
@@ -28,11 +28,13 @@ def _main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
         tr = traceback.format_exc().splitlines()
         for line in tr:
             report += line + "\n"
+        return
 
     try:
         for data in data_provider:
             example_pols_in = data[0]
-            pnode.train(pols)
+            example_pols_in = example_pols_in.reshape(1, example_pols_in.size)
+            pnode.train(data)
             print "\n"
 
         processing_time_end = time.asctime()

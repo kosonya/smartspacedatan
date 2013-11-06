@@ -39,6 +39,7 @@ class DataLoader(object):
         count = c.execute(query)
         if count < 3: #completely useless
             res = None
+            count = 0
         else:
             res = c.fetchall()
         c.close()
