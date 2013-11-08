@@ -10,11 +10,20 @@ import numpy
 
 
 class DataProvider(object):
-	def __init__(self, order=1, use_pca=False, pca_nodes_path=None, db_host="localhost", db_user="root", db_password="", db_name="andrew", device_list=None, start_time=None, stop_time=None, debug=False, group_by = 60, device_groupping = "dict", eliminate_const_one=True, dtype="float64"):
+	def __init__(self, order=1, use_pca=False, pca_nodes_path=None,
+				db_host="localhost", db_user="root", db_password="",
+				db_name="andrew", device_list=None, start_time=None,
+				stop_time=None, debug=False, group_by = 60,
+				device_groupping = "dict", eliminate_const_one=True,
+				dtype="float64",
+				raw_readings_norm_coeffs = {"temp": 1, "light": 1,
+										"humidity" : 1, "pressure": 1, 
+										"audio_p2p": 1, "motion" : 1}):
 		self.debug = debug
 		self.order = order
 		self.dtype = dtype
 		self.use_pca = use_pca
+		self.raw_readings_norm_coeffs = raw_readings_norm_coeffs
 		self.eliminate_const_one = eliminate_const_one
 		self.pca_nodes_path = pca_nodes_path
 		if self.use_pca and not self.pca_nodes_path:
@@ -84,7 +93,7 @@ class DataProvider(object):
 			for device in self.device_list:
 				if self.debug:
 					print "Processing device", device
-				count, data = self.data_loader.load_data_bundle(self._start_t, self._end_t, device)
+				count, data = self.data_loader.load_data_bundle_normalized(self._start_t, self._end_t, device, self.raw_readings_norm_coeffs)
 				if count > 0:
 					res[device] = data
 					if self.debug:

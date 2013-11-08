@@ -45,3 +45,20 @@ class DataLoader(object):
         c.close()
         db.close()
         return count, res
+
+    def load_data_bundle_normalized(self, start, stop, device_mac, norm_coeffs):
+        vals = (norm_coeffs["temp"], norm_coeffs["light"], norm_coeffs["humidity"],
+                norm_coeffs["pressure"], norm_coeffs["audio_p2p"],
+                norm_coeffs["motion"], device_mac, start, stop)
+        query = "SELECT timestamp DIV 1000, temp / %f, light / %f, humidity / %f, pressure  / %f, audio_p2p / %f, motion / %f FROM readings WHERE mac = \'%s\' AND timestamp BETWEEN %d*1000 AND %d*1000" % vals
+        db = MySQLdb.connect(host = self.mysql_host, user = self.mysql_user, db = self.mysql_db, passwd = self.mysql_password)
+        c = db.cursor()
+        count = c.execute(query)
+        if count < 3: #completely useless
+            res = None
+            count = 0
+        else:
+            res = c.fetchall()
+        c.close()
+        db.close()
+        return count, res

@@ -15,10 +15,24 @@ group_by = 60
 def _main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
     global group_by
     report = ""
+    coeffs = raw_readings_norm_coeffs = {"temp": 100,
+                                        "light": 100,
+                                        "humidity" : 100, "pressure": 1e5, 
+                                        "audio_p2p": 100, "motion" : 1}
     try:
         numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
-#        data_provider = dataprovider.DataProvider(order=1, debug=True, start_time = 1379984887, stop_time = 1379984887+3600, device_list = ["17030002", "17030003", "17030004"], eliminate_const_one=True, device_groupping="numpy_matrix")
-        data_provider = dataprovider.DataProvider(order=1, debug=True, eliminate_const_one=True, device_groupping="numpy_matrix")
+        if True:
+            data_provider = dataprovider.DataProvider(order=1, debug=True,
+                                                      start_time = 1379984887,
+                                                      stop_time = 1379984887+3600*24,
+                                                      device_list = ["17030002", "17030003", "17030004"],
+                                                      eliminate_const_one=True, device_groupping="numpy_matrix",
+                                                  raw_readings_norm_coeffs = coeffs)
+        else:
+            data_provider = dataprovider.DataProvider(order=1, debug=True,
+                                                  eliminate_const_one=True,
+                                                  device_groupping="numpy_matrix",
+                                                 raw_readings_norm_coeffs = coeffs)
 
         pnode = mdp.nodes.PCANode(svd=True)
 
@@ -92,6 +106,10 @@ def _main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
         report += "Stopping stopped at:\t" + str(stopping_time_end) + "\n"
         report += "It took %d seconds" % (stopping_time_end_s - stopping_time_start_s) + "\n"
         report += "Total time elapsed:\t%d seconds" % (stopping_time_end_s - processing_time_start_s) + "\n" + "\n"
+<<<<<<< HEAD
+=======
+
+>>>>>>> 19ba26fcbde72349c71ca9f5837b46ae9dbff667
         report += "Polynomial order:\t" + str(order) + "\n"
     except Exception:
         tr = traceback.format_exc().splitlines()
