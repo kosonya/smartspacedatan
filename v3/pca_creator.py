@@ -92,9 +92,6 @@ def _main(order = 2, pnodefile = "pnode.p", testpairfile = "testpair.p"):
         report += "Stopping stopped at:\t" + str(stopping_time_end) + "\n"
         report += "It took %d seconds" % (stopping_time_end_s - stopping_time_start_s) + "\n"
         report += "Total time elapsed:\t%d seconds" % (stopping_time_end_s - processing_time_start_s) + "\n" + "\n"
-        report += "Raw features:\t\t" + str(n_raw_feats) + "\n"
-        report += "Extracted features:\t" + str(n_extr_feats) + "\n"
-        report += "Polynomial features:\t" + str(n_pol_feats) + "\n"
         report += "Polynomial order:\t" + str(order) + "\n"
     except Exception:
         tr = traceback.format_exc().splitlines()
