@@ -8,7 +8,7 @@ parallel_threads = 6
 dtype = "float64"
 
 def unzip_data_bundle(data):
-    return [list(x) for x in zip(*data)]
+    return [map(float, x) for x in zip(*data)]
 
 
 def _avg(_time, data):
