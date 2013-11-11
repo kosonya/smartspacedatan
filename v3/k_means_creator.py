@@ -22,10 +22,10 @@ def _main(order = 2, pnodefile = "knode.p"):
     try:
         numpy.set_printoptions(precision=1, linewidth=284, threshold=40, edgeitems=13)
         if True:
-            data_provider = dataprovider.DataProvider(order=1, debug=True,
-                                                      start_time = 1379984887,
-                                                      stop_time = 1379984887+3600*24,
-                                                      device_list = ["17030002", "17030003", "17030004"],
+            data_provider = dataprovider.DataProvider(order=order, debug=True,
+                                                      #start_time = 1379984887,
+                                                      #stop_time = 1379984887+3600*24,
+                                                      #device_list = ["17030002", "17030003", "17030004"],
                                                       eliminate_const_one=True, device_groupping="numpy_matrix",
                                                   raw_readings_norm_coeffs = coeffs)
         else:
@@ -107,7 +107,7 @@ def main():
         print "%d order processing has started" % order
         report = _main(order = order, pnodefile = ("%d_order_knode.p" % order))
         print "%d order processing has stopped" % order
-        f = open( ("%d_order_l_means_report.txt" % order), "w")
+        f = open( ("%d_order_k_means_report.txt" % order), "w")
         f.write(report)
         f.close()
         print "Report is written to", ("%d_order_k_means_report.txt" % order)
