@@ -65,26 +65,32 @@ def main():
 	st_raw = DataStats()
 	st_pca = DataStats()
 
-	data_provider = dataprovider.DataProvider(order=1, debug=True, eliminate_const_one=True, device_groupping="dict", use_pca=True, pca_nodes_path = "results/05_11_2013_1_order_svd_true/")
+	coeffs = raw_readings_norm_coeffs = {"temp": 100,
+                                        "light": 100,
+                                        "humidity" : 100, "pressure": 1e5, 
+                                        "audio_p2p": 100, "motion" : 1}
+
+	data_provider = dataprovider.DataProvider(order=1, raw_readings_norm_coeffs = coeffs, device_list=["17010002", "17010003", "17010004"], start_time = 1379990887, stop_time=1379990887+3600*4/40, debug=True, eliminate_const_one=True, device_groupping="dict", use_pca=True, pca_nodes_path = "results/05_11_2013_1_order_svd_true/")
 
 	for data in data_provider:
 		for device, arr in data.items():
 			st_pca.add(arr[1])
 
-	data_provider = dataprovider.DataProvider(order=1, debug=True, eliminate_const_one=True, device_groupping="dict")
+	data_provider = dataprovider.DataProvider(order=1, raw_readings_norm_coeffs = coeffs, device_list=["17010002", "17010003", "17010004"], start_time = 1379990887, stop_time=1379990887+3600*24/40, debug=True, eliminate_const_one=True, device_groupping="dict")
 
 	for data in data_provider:
 		for device, arr in data.items():
 			st_raw.add(arr[1])
 				
 				
-	plt.figure(1)
+	fig = plt.figure(1)
 
-	plt.subplot(221)
+	f221 = fig.add_subplot(221)
 	raw_maxes = st_raw.get_avgs()
-	plt.title("No PCA - averages")
-	plt.xlabel("Variable")
-	plt.bar(range(len(raw_maxes)), raw_maxes)
+	f221.set_title("No PCA - averages")
+	f221.set_xlabel("Variable")
+	f221.bar(range(len(raw_maxes)), raw_maxes)
+	f221.set_yscale('log')
 
 	plt.subplot(222)
 	raw_stds = st_raw.get_stds()
@@ -98,6 +104,7 @@ def main():
 	plt.title("With PCA - averages")
 	plt.xlabel("Variable")
 	plt.bar(range(len(pca_maxes)), pca_maxes)
+	plt.yscale('log')
 
 
 	plt.subplot(224)
