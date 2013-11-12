@@ -89,7 +89,7 @@ def main():
 	raw_maxes = st_raw.get_avgs()
 	f221.set_title("No PCA - averages")
 	f221.set_xlabel("Variable")
-	f221.bar(range(len(raw_maxes)), raw_maxes)
+	f221.plot(range(len(raw_maxes)), raw_maxes, 'ro')
 	f221.set_yscale('log')
 
 	plt.subplot(222)
@@ -103,7 +103,7 @@ def main():
 	pca_maxes = st_pca.get_avgs()
 	plt.title("With PCA - averages")
 	plt.xlabel("Variable")
-	plt.bar(range(len(pca_maxes)), pca_maxes)
+	plt.plot(range(len(pca_maxes)), pca_maxes, 'ro')
 	plt.yscale('log')
 
 
