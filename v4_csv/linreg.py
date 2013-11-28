@@ -5,7 +5,7 @@ import numpy
 
 def main():
     group_by = 120
-    order = 2
+    order = 3
     dl = dataloader.DataLoader()
     min_t, max_t =  dl.get_min_max_timestamps()
     start_t = min_t
