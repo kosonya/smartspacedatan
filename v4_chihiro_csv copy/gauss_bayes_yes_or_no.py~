@@ -1,0 +1,139 @@
+import dataloader
+import dataprocessor
+import numpy
+import math
+
+def pdf(x, avg, std, minimum_p = 1e-20):
+    if std == 0:
+        if x == avg:
+            return 1
+        else:
+            return minimum_p
+    return math.exp(- ((x - avg)**2) / (2.0*(std**2))   ) / (std*math.sqrt(2*math.pi)) 
+
+def main():
+    group_by = 120
+    order = 1
+    dl = dataloader.DataLoader()
+    min_t, max_t =  dl.get_min_max_timestamps()
+    start_t = min_t
+    stop_t = start_t + group_by
+    
+    
+    
+    groupped_stats = {}
+    
+    while stop_t <= max_t:
+        print "Processing from", start_t, "to", stop_t, "of from", min_t, "to", max_t, "(", 100*float(stop_t - min_t)/float(max_t - min_t), "%)"
+        count, timedata_and_people = dl.load_data_bundle(start_t, stop_t)
+        print "count, timedata_and_people", count, timedata_and_people
+        if count >= 3:
+            time_and_data = []
+            people = []
+            for t, p in timedata_and_people:
+                time_and_data.append(t)
+                people.append(p)
+        else:
+           start_t = stop_t + 1
+           stop_t = start_t + group_by
+           continue
+        uz_data = dataprocessor.unzip_data_bundle(time_and_data)
+        time_and_feats = dataprocessor.extract_all_features_from_sensors(uz_data)
+        _time, pols = dataprocessor.build_polynomial_features(time_and_feats, order=order)
+        pols = pols[:,1:]
+        
+        arr_people = numpy.array(people, dtype="float64")
+        p = numpy.empty( [1, 1] )
+        p[0][0] = numpy.round(numpy.average(arr_people))
+        p = int(p[0][0])
+        if p != 0:
+            p = 1
+        print p
+        print pols
+        
+        if groupped_stats.has_key(p):
+            groupped_stats[p] = numpy.vstack( (groupped_stats[p], pols) )
+        else:
+            groupped_stats[p] = pols
+        
+        start_t = stop_t + 1
+        stop_t = start_t + group_by
+    for key in groupped_stats.keys():
+        print key, ":", groupped_stats[key].shape
+        
+    stats = {}
+    total = sum([x.shape[0] for x in groupped_stats.values()])
+    print "Total:", total
+    for npeople in groupped_stats.keys():
+        stats[npeople] = {}
+        stats[npeople]["avgs"] = numpy.mean(groupped_stats[npeople], axis = 0)
+        stats[npeople]["stds"] = numpy.std(groupped_stats[npeople], axis = 0)
+        stats[npeople]["marginal"] = float(groupped_stats[npeople].shape[0])/float(total)
+        print stats[npeople]
+
+    start_t = min_t
+    stop_t = start_t + group_by
+
+    store = []
+    rights = 0
+    total = 0
+    
+    nz_total = 0
+    nz_rigths = 0
+    
+
+    while stop_t <= max_t:
+        print "Processing from", start_t, "to", stop_t, "of from", min_t, "to", max_t
+        count, timedata_and_people = dl.load_data_bundle(start_t, stop_t)
+        print "Count:", count
+        if count >= 3:
+            time_and_data = []
+            people = []
+            for t, p in timedata_and_people:
+                time_and_data.append(t)
+                people.append(p)
+        else:
+           start_t = stop_t + 1
+           stop_t = start_t + group_by
+           continue
+        uz_data = dataprocessor.unzip_data_bundle(time_and_data)
+        time_and_feats = dataprocessor.extract_all_features_from_sensors(uz_data)
+        _time, pols = dataprocessor.build_polynomial_features(time_and_feats, order=order)
+        pols = pols[:,1:]
+        
+        arr_people = numpy.array(people, dtype="float64")
+        p = int(numpy.mean( numpy.average(arr_people)))
+        if p != 0:
+            p = 1
+        feats = pols[0]
+        pdfs = {}
+        for npeople in stats.keys():
+            cur_pdf = 1
+            for i in xrange(feats.size):
+                cur_pdf *= pdf(feats[i], stats[npeople]["avgs"][i], stats[npeople]["stds"][i])
+            cur_pdf *= stats[npeople]["marginal"]
+            pdfs[npeople] = cur_pdf
+        
+        p_est = max(pdfs.items(), key = lambda x: x[1])[0]
+        
+        if p != 0:
+            print "True:", p, "estimate:", p_est
+        
+        if p != 0:
+            nz_total += 1
+            if p == p_est:
+                nz_rigths += 1
+        total += 1
+        if p == p_est:
+            rights += 1
+        start_t = stop_t + 1
+        stop_t = start_t + group_by
+
+        
+    print "Total:", total, "rights:", rights, "(", 100*float(rights)/float(total), "%)"
+    print "Total non-zero:", nz_total, "rights:", nz_rigths, "(", 100*float(nz_rigths)/float(nz_total), "%)"
+
+    
+    
+if __name__ == "__main__":
+    main()

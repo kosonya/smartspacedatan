@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+
+import dataloader
+import dataprocessor
+import numpy
+import math
+import pickle
+import random
+
+def main():
+	training_set_ratio = 0.8
+	negatives_drop_ratio = 10
+	src_file = "129_readings.cal.csv"
+	src_filename = "../../../cal.joined/" + src_file
+	group_by = 120*1000
+	order = 1
+	numpy.set_printoptions(precision=1, linewidth=210, threshold=30, edgeitems=10)
+
+	dl = dataloader.DataLoader(filename = src_filename)
+	min_t, max_t =  dl.get_min_max_timestamps()
+	print min_t, max_t
+	start_t = min_t
+	stop_t = start_t + group_by
+	
+
+	training_set = None
+	test_set = None
+
+	while stop_t <= max_t:
+		print "Processing from", start_t, "to", stop_t, "of from", min_t, "to", max_t, "(", 100*float(stop_t - min_t)/float(max_t - min_t), "%)"
+		count, timedata_and_people = dl.load_data_bundle(start_t, stop_t)
+		#print "count, timedata_and_people", count, timedata_and_people
+		if count >= 3:
+			print count, "rows loaded"	
+			time_and_data = []
+			people = []
+			
+			for t, p in timedata_and_people:
+				#print t, p
+				time_and_data.append(t)
+				people.append(p)
+		else:
+			print "Count =", count, "skipping"
+			start_t = stop_t + 1
+			stop_t = start_t + group_by
+			continue
+		uz_data = dataprocessor.unzip_data_bundle(time_and_data)
+		time_and_feats = dataprocessor.extract_all_features_from_sensors(uz_data)
+		_time, pols = dataprocessor.build_polynomial_features(time_and_feats, order=order)
+		pols = pols[:,1:]
+		
+		avg_people = numpy.mean(people)
+
+
+		arr_raw_people = numpy.array(avg_people, dtype="float64").reshape( (1, 1) )
+		arr_rounded_people = numpy.round(arr_raw_people)
+		arr_binary_people = numpy.array(arr_rounded_people)
+		if arr_binary_people[0][0] >= 0.5:
+			arr_binary_people[0][0] = 1
+
+
+		binary_reading = numpy.hstack( (pols, arr_binary_people) )
+
+		if arr_binary_people == 0:
+			ratio = training_set_ratio / negatives_drop_ratio
+		else:
+			ratio = training_set_ratio
+
+
+		if random.random() < ratio:
+			if training_set == None:
+				training_set = binary_reading
+			else:
+				training_set = numpy.vstack( (training_set, binary_reading) )
+		else:
+			if test_set == None:
+				test_set = binary_reading
+			else:
+				test_set = numpy.vstack( (test_set, binary_reading) )
+
+
+		print pols
+		print avg_people
+		print "\n\n"
+		
+		start_t = stop_t + 1
+		stop_t = start_t + group_by
+
+	print training_set
+	fname = "training_set." + src_file + ".matrix_dataset_binary.p"
+	f = open(fname, "wb")
+	pickle.dump(training_set, f)
+	f.close()
+
+	print test_set
+	fname = "test_set." + src_file + ".matrix_dataset_binary.p"
+	f = open(fname, "wb")
+	pickle.dump(test_set, f)
+	f.close()
+	
+if __name__ == "__main__":
+	main()

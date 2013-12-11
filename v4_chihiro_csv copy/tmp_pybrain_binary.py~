@@ -1,0 +1,103 @@
+#!/usr/bin/env python
+
+import dataloader
+import dataprocessor
+import numpy
+import math
+import pickle
+import pybrain.datasets
+import pybrain.supervised.trainers
+import pybrain.tools.shortcuts
+
+
+def main():
+	group_by = 120*1000
+	order = 1
+	filename = "training_set.129A_readings.cal.csv.matrix_dataset_binary.p"
+	f = open(filename, "rb")
+	matrix_dataset = pickle.load(f)
+	f.close()
+	
+	print matrix_dataset
+
+	norm_coeffs = numpy.max(matrix_dataset, axis=0)
+	norm_coeffs[-1] = 1 #not normalizing the number of people
+	
+	print norm_coeffs
+
+	matrix_dataset = matrix_dataset / norm_coeffs
+
+	print matrix_dataset.shape
+ 
+	pybrain_dataset = pybrain.datasets.SupervisedDataSet(matrix_dataset.shape[1] - 1, 1)
+
+	for reading in matrix_dataset:
+		pybrain_dataset.appendLinked( list(reading[:-1]), [reading[-1]])
+
+	print pybrain_dataset
+
+	net = pybrain.tools.shortcuts.buildNetwork(matrix_dataset.shape[1] - 1, matrix_dataset.shape[1] - 1, 1)
+	
+	trainer = pybrain.supervised.trainers.BackpropTrainer(net, pybrain_dataset)
+	
+	print "Training"
+
+	while True:
+		error = trainer.train()
+		print "Current error:", error
+		if error < 0.09:
+			break
+	print "Training done"
+	f = open("net.p", "wb")
+	pickle.dump(net, f)
+	f.close()
+
+	rights = 0
+	
+	total_positives = 0
+	true_positives = 0
+	total_negatives = 0
+	true_negatives = 0
+
+	cur_total = 0
+	previous_percent_done = 0
+	report_step = 1
+	total = matrix_dataset.shape[0]
+
+
+	for reading in matrix_dataset:
+			data = list(reading[:-1])
+			people_true = int(reading[-1])
+			people_estimate = int(numpy.round(net.activate(data)))
+			if people_true == people_estimate:
+				rights += 1
+				if people_true == 0:
+					total_negatives += 1
+					true_negatives += 1
+				else:
+					total_positives += 1
+					true_positives += 1
+			elif people_true == 0:
+				total_negatives += 1
+			else:
+				total_positives += 1
+			
+
+			cur_total += 1
+			percent_done = 100*float(cur_total)/total
+			percent_success = 100*float(rights)/cur_total
+			if percent_done - previous_percent_done >= report_step:
+				print "Processing reading {} of {} ({}% done). Success rate so far: {}%".format(cur_total, total, percent_done, percent_success)
+				previous_percent_done = percent_done
+
+	
+
+		
+	print "Total:", total, "rights:", rights, "(", 100*float(rights)/float(total), "%)"
+	print "Positive ratio:", 100*float(total_positives)/float(total), "%; true positives:", 100*float(true_positives)/float(total_positives), "%"
+	print "Negative ratio:", 100*float(total_negatives)/float(total), "%; true negatives:", 100*float(true_negatives)/float(total_negatives), "%"
+
+	
+	
+if __name__ == "__main__":
+	main()
